@@ -122,6 +122,7 @@ public class EntityOnboardingMockedActivityTest {
                         && Objects.equals(inputCall.value(), args.value())));
     verify(notificationsHandlers, never()).requestDeputyOwnerApproval(any());
   }
+
   // state verification
   @Test
   public void givenValidArgsWithOwnerApprovalNoDeputyOwner_whenRejected_itShouldBeRejected() {
@@ -138,6 +139,7 @@ public class EntityOnboardingMockedActivityTest {
     EntityOnboardingState response = sut.getState();
     Assertions.assertEquals(response.approval().approvalStatus(), ApprovalStatus.REJECTED);
   }
+
   // behavior verification
   @Test
   public void
