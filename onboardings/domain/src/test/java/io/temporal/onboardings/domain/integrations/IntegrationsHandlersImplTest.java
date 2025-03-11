@@ -47,7 +47,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.annotation.DirtiesContext;
@@ -57,7 +56,7 @@ import org.springframework.web.client.HttpClientErrorException;
 
 @SpringBootTest(
     classes = {
-      IntegrationsHandlersImplTest.Configuration.class,
+      DomainConfig.class,
     })
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_METHOD)
@@ -107,7 +106,4 @@ public class IntegrationsHandlersImplTest {
     var ae = Assertions.assertInstanceOf(ApplicationFailure.class, e.getCause());
     Assertions.assertEquals(Errors.SERVICE_UNRECOVERABLE.name(), ae.getType());
   }
-
-  @ComponentScan
-  public static class Configuration {}
 }

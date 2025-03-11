@@ -59,7 +59,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.annotation.DirtiesContext;
@@ -69,7 +68,7 @@ import org.springframework.web.client.HttpClientErrorException;
 
 @SpringBootTest(
     classes = {
-      EntityOnboardingMockedDependencyTest.Configuration.class,
+      DomainConfig.class,
     })
 @TestInstance(TestInstance.Lifecycle.PER_METHOD)
 @EnableAutoConfiguration()
@@ -279,7 +278,4 @@ public class EntityOnboardingMockedDependencyTest {
 
     Assertions.assertEquals(Errors.SERVICE_UNRECOVERABLE.name(), afe.getType());
   }
-
-  @ComponentScan
-  static class Configuration {}
 }

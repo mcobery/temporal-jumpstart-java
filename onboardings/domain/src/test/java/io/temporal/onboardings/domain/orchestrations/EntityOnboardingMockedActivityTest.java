@@ -57,7 +57,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
@@ -65,7 +64,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 @SpringBootTest(
     classes = {
-      EntityOnboardingMockedActivityTest.Configuration.class,
+      DomainConfig.class,
     })
 @TestInstance(TestInstance.Lifecycle.PER_METHOD)
 @EnableAutoConfiguration()
@@ -240,7 +239,4 @@ public class EntityOnboardingMockedActivityTest {
     Assertions.assertEquals(
         Errors.INVALID_ARGS.name(), ((ApplicationFailure) e.getCause()).getType());
   }
-
-  @ComponentScan
-  static class Configuration {}
 }

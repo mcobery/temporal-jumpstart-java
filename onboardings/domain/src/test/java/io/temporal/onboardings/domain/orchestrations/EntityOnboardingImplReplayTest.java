@@ -47,14 +47,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
 @SpringBootTest(
     classes = {
-      EntityOnboardingImplReplayTest.Configuration.class,
+      DomainConfig.class,
     })
 @TestInstance(TestInstance.Lifecycle.PER_METHOD)
 @EnableAutoConfiguration()
@@ -114,7 +113,4 @@ public class EntityOnboardingImplReplayTest {
   @Test
   public void
       givenValidArgsWithOwnerApprovalAndDeputyOwnerWhenApprovalWindowTimesOut_itShouldAllowApprovalByDeputy() {}
-
-  @ComponentScan
-  static class Configuration {}
 }
