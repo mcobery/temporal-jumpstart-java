@@ -24,7 +24,12 @@
 
 package io.temporal.onboardings.domain.orchestrations;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.argThat;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 import io.temporal.client.WorkflowClient;
 import io.temporal.client.WorkflowFailedException;
@@ -43,16 +48,20 @@ import io.temporal.testing.TestWorkflowEnvironment;
 import java.time.Duration;
 import java.util.Objects;
 import java.util.UUID;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 @SpringBootTest(
     classes = {
@@ -63,6 +72,7 @@ import org.springframework.test.context.ActiveProfiles;
 @DirtiesContext
 @ActiveProfiles("test")
 @Import(DomainConfig.class)
+@MockitoBean(types = {IntegrationsHandlers.class, NotificationsHandlers.class})
 public class EntityOnboardingMockedActivityTest {
   @Autowired ConfigurableApplicationContext applicationContext;
 
@@ -70,7 +80,7 @@ public class EntityOnboardingMockedActivityTest {
 
   @Autowired WorkflowClient workflowClient;
 
-  @MockBean IntegrationsHandlers integrationsHandlers;
+  @Autowired IntegrationsHandlers integrationsHandlers;
 
   @Autowired NotificationsHandlers notificationsHandlers;
 
@@ -225,25 +235,12 @@ public class EntityOnboardingMockedActivityTest {
             EntityOnboarding.class,
             WorkflowOptions.newBuilder().setWorkflowId(wfId).setTaskQueue(taskQueue).build());
 
-    var e =
-        Assertions.assertThrows(
-            WorkflowFailedException.class,
-            () -> {
-              sut.execute(args);
-            });
+    var e = Assertions.assertThrows(WorkflowFailedException.class, () -> sut.execute(args));
     Assertions.assertInstanceOf(ApplicationFailure.class, e.getCause());
     Assertions.assertEquals(
         Errors.INVALID_ARGS.name(), ((ApplicationFailure) e.getCause()).getType());
   }
 
   @ComponentScan
-  public static class Configuration {
-    @MockBean private NotificationsHandlers notificationsHandlersMock;
-
-    @Primary
-    @Bean("notifications-handlers")
-    public NotificationsHandlers notificationsHandlers() {
-      return notificationsHandlersMock;
-    }
-  }
+  static class Configuration {}
 }

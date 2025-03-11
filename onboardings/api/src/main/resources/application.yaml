@@ -5,15 +5,13 @@ spring:
     allow-bean-definition-overriding: true
   application:
     name: temporal-curriculum-java
-  # temporal specific configs
   temporal:
     connection:
       target: local
     workers-auto-discovery:
-      packages: # intentionally left blank to avoid spring auto configure problems...i just want a client
+      packages: null
   curriculum:
     task-queue: onboardings
-# actuator (sdk metrics)
 management:
   endpoints:
     web:
@@ -21,4 +19,4 @@ management:
         include: prometheus
   metrics:
     tags:
-      application: ${spring.application.name}
+      application: "${spring.application.name}"
