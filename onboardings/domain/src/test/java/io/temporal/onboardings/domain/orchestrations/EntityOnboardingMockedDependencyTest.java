@@ -24,7 +24,12 @@
 
 package io.temporal.onboardings.domain.orchestrations;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import io.temporal.client.WorkflowClient;
 import io.temporal.client.WorkflowFailedException;
@@ -44,32 +49,33 @@ import io.temporal.testing.TestWorkflowEnvironment;
 import java.net.ConnectException;
 import java.time.Duration;
 import java.util.UUID;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.web.client.HttpClientErrorException;
 
 @SpringBootTest(
     classes = {
-      EntityOnboardingMockedDependencyTest.Configuration.class,
+      DomainConfig.class,
     })
 @TestInstance(TestInstance.Lifecycle.PER_METHOD)
 @EnableAutoConfiguration()
 @DirtiesContext
 @ActiveProfiles("test")
 @Import(DomainConfig.class)
+@MockitoBean(types = {CrmClient.class, EmailClient.class})
 public class EntityOnboardingMockedDependencyTest {
   @Autowired ConfigurableApplicationContext applicationContext;
 
@@ -236,12 +242,7 @@ public class EntityOnboardingMockedDependencyTest {
             EntityOnboarding.class,
             WorkflowOptions.newBuilder().setWorkflowId(wfId).setTaskQueue(taskQueue).build());
 
-    var e =
-        Assertions.assertThrows(
-            WorkflowFailedException.class,
-            () -> {
-              sut.execute(args);
-            });
+    var e = Assertions.assertThrows(WorkflowFailedException.class, () -> sut.execute(args));
     Assertions.assertInstanceOf(ApplicationFailure.class, e.getCause());
     Assertions.assertEquals(
         Errors.INVALID_ARGS.name(), ((ApplicationFailure) e.getCause()).getType());
@@ -266,39 +267,15 @@ public class EntityOnboardingMockedDependencyTest {
         workflowClient.newWorkflowStub(
             EntityOnboarding.class,
             WorkflowOptions.newBuilder().setWorkflowId(args.id()).setTaskQueue(taskQueue).build());
-    var foo = WorkflowClient.start(sut::execute, args);
+    WorkflowClient.start(sut::execute, args);
     testWorkflowEnvironment.sleep(Duration.ofSeconds(1));
     sut.approve(new ApproveEntityRequest("nocomment"));
     testWorkflowEnvironment.sleep(Duration.ofSeconds(1));
-    var e =
-        Assertions.assertThrows(
-            WorkflowFailedException.class,
-            () -> {
-              sut.execute(args);
-            });
+    var e = Assertions.assertThrows(WorkflowFailedException.class, () -> sut.execute(args));
 
     var ae = Assertions.assertInstanceOf(ActivityFailure.class, e.getCause());
     var afe = Assertions.assertInstanceOf(ApplicationFailure.class, ae.getCause());
 
     Assertions.assertEquals(Errors.SERVICE_UNRECOVERABLE.name(), afe.getType());
-  }
-
-  @ComponentScan
-  public static class Configuration {
-    @MockBean private CrmClient crmListener;
-
-    @MockBean private EmailClient emailClient;
-
-    @Primary
-    @Bean
-    public CrmClient getCrmListener() {
-      return crmListener;
-    }
-
-    @Primary
-    @Bean
-    EmailClient getEmailClient() {
-      return emailClient;
-    }
   }
 }

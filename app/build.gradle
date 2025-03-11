@@ -1,0 +1,38 @@
+subprojects {
+	apply plugin: 'java'
+	apply plugin: 'org.cadixdev.licenser'
+	apply plugin: 'org.springframework.boot'
+	apply plugin: 'io.spring.dependency-management'
+
+	compileJava {
+		options.compilerArgs << "-Werror"
+	}
+
+	repositories {
+		maven {
+			url "https://oss.sonatype.org/content/repositories/snapshots/"
+		}
+
+		mavenCentral()
+	}
+
+	dependencies {
+
+	}
+
+	license {
+		header rootProject.file('LICENSE')
+		include '**/*.java'
+		exclude '**/*.json'
+		exclude '**/*.yaml'
+		exclude '**/*.yml'
+		exclude '**/*.html'
+		exclude '**/*.js'
+	}
+
+  apply from: "${rootProject.projectDir}/gradle/spotless.gradle"
+
+	tasks.named('test') {
+		useJUnitPlatform()
+	}
+}

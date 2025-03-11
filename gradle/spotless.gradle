@@ -1,0 +1,36 @@
+apply plugin: 'com.diffplug.spotless'
+
+spotless {
+  enforceCheck true
+  encoding 'UTF-8'
+  lineEndings 'UNIX'
+  java {
+    target 'src/*/java/**/*.java'
+    targetExclude '**/.idea/**'
+    googleJavaFormat(versions.google.format)
+  }
+  groovyGradle {
+    target fileTree('.') {
+      include '**/*.gradle', "${rootProject.projectDir}/gradle/*.gradle"
+      exclude '**/build/**', '**/build-*/**'
+    }
+    indentWithTabs(2)
+    indentWithSpaces(2)
+    trimTrailingWhitespace()
+    endWithNewline()
+  }
+  yaml {
+    target fileTree('.') {
+      include 'src/**/*.yaml', 'src/**/*.yml'
+    }
+    jackson()
+        // https://github.com/FasterXML/jackson-databind/blob/jackson-databind-2.17.3/src/main/java/com/fasterxml/jackson/databind/SerializationFeature.java
+        .feature('INDENT_OUTPUT', true)
+        .feature('ORDER_MAP_ENTRIES_BY_KEYS', true)
+        // https://github.com/FasterXML/jackson-dataformat-yaml/blob/master/src/main/java/com/fasterxml/jackson/dataformat/yaml/YAMLGenerator.java
+        .yamlFeature('INDENT_ARRAYS', true)
+        .yamlFeature('MINIMIZE_QUOTES', true)
+        .yamlFeature('WRITE_DOC_START_MARKER', false)
+  }
+}
+

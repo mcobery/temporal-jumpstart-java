@@ -27,7 +27,6 @@ package io.temporal.onboardings.domain.orchestrations;
 import io.temporal.client.WorkflowClient;
 import io.temporal.client.WorkflowOptions;
 import io.temporal.onboardings.domain.DomainConfig;
-import io.temporal.onboardings.domain.integrations.IntegrationsHandlers;
 import io.temporal.onboardings.domain.messages.commands.ApproveEntityRequest;
 import io.temporal.onboardings.domain.messages.orchestrations.OnboardEntityRequest;
 import io.temporal.onboardings.domain.notifications.NotificationsHandlers;
@@ -38,21 +37,23 @@ import io.temporal.worker.Worker;
 import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
 @SpringBootTest(
     classes = {
-      EntityOnboardingMockedActivityTest.Configuration.class,
+      DomainConfig.class,
     })
 @TestInstance(TestInstance.Lifecycle.PER_METHOD)
 @EnableAutoConfiguration()
@@ -65,8 +66,6 @@ public class EntityOnboardingImplReplayTest {
   @Autowired TestWorkflowEnvironment testWorkflowEnvironment;
 
   @Autowired WorkflowClient workflowClient;
-
-  @MockBean IntegrationsHandlers integrationsHandlers;
 
   @Autowired NotificationsHandlers notificationsHandlers;
 
@@ -92,7 +91,6 @@ public class EntityOnboardingImplReplayTest {
             .toList();
     for (String tq : taskQueues) {
       String wfId = UUID.randomUUID().toString();
-      String wfId2 = UUID.randomUUID().toString();
       var args = new OnboardEntityRequest(wfId, UUID.randomUUID().toString(), 4, null, false);
       EntityOnboarding source =
           workflowClient.newWorkflowStub(
@@ -105,9 +103,7 @@ public class EntityOnboardingImplReplayTest {
       Assertions.assertDoesNotThrow(() -> source.execute(args));
       var history = workflowClient.fetchHistory(args.id());
       Assertions.assertDoesNotThrow(
-          () -> {
-            WorkflowReplayer.replayWorkflowExecution(history, EntityOnboardingImpl.class);
-          });
+          () -> WorkflowReplayer.replayWorkflowExecution(history, EntityOnboardingImpl.class));
     }
   }
 
