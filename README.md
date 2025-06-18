@@ -3,8 +3,8 @@ Some repos Start. This one Jump Starts.
 
 ## Requirements
 
-* Java 17+
-* Gradle 8.0.1 (wrapper included)
+* Java 21+
+* Gradle 8.14.2 (wrapper included)
 * [Temporal CLI](https://github.com/temporalio/cli)
 
 ## Setup

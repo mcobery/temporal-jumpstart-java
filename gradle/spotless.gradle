@@ -14,8 +14,8 @@ spotless {
       include '**/*.gradle', "${rootProject.projectDir}/gradle/*.gradle"
       exclude '**/build/**', '**/build-*/**'
     }
-    indentWithTabs(2)
-    indentWithSpaces(2)
+    leadingSpacesToTabs(2)
+    leadingTabsToSpaces(2)
     trimTrailingWhitespace()
     endWithNewline()
   }
